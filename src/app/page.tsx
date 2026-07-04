@@ -4,6 +4,7 @@ import { useState } from "react";
 import Header from "@/components/shared/Header";
 import UploadPage from "@/components/upload/UploadPage";
 import AnalysisPage from "@/components/analysis/AnalysisPage";
+import WorkspacePage from "@/components/workspace/WorkspacePage";
 
 type AppPage = "upload" | "analysis" | "workspace";
 
@@ -13,7 +14,22 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header currentPage={currentPage} />
+      <Header
+        currentPage={currentPage}
+        actions={
+          currentPage === "workspace" ? (
+            <button
+              onClick={() => {
+                // TODO: Phase 6 — Export Drawer
+                alert("导出功能将在 Phase 6 实现");
+              }}
+              className="rounded-btn bg-primary px-4 py-1.5 text-xs font-semibold text-white hover:bg-primary-hover"
+            >
+              📄 导出 Word
+            </button>
+          ) : undefined
+        }
+      />
 
       {/* ── Page 1: Upload ── */}
       {currentPage === "upload" && (
@@ -34,22 +50,14 @@ export default function Home() {
         />
       )}
 
-      {/* ── Page 3: Workspace (Phase 5 占位) ── */}
+      {/* ── Page 3: Workspace ── */}
       {currentPage === "workspace" && (
-        <div className="flex flex-1 items-center justify-center p-10">
-          <div className="w-full max-w-[520px] rounded-card border border-border bg-surface p-12 text-center shadow-card">
-            <h2 className="text-xl font-bold">📋 教师工作台</h2>
-            <p className="mt-2 text-text-secondary">
-              三栏布局工作台将在 Phase 5 实现
-            </p>
-            <button
-              onClick={() => setCurrentPage("upload")}
-              className="mt-6 rounded-btn border border-border bg-surface px-6 py-2 text-sm font-semibold text-text-primary hover:bg-background"
-            >
-              ← 回到上传
-            </button>
-          </div>
-        </div>
+        <WorkspacePage
+          onExport={() => {
+            // TODO: Phase 6 — Export Drawer
+            alert("导出功能将在 Phase 6 实现");
+          }}
+        />
       )}
     </div>
   );

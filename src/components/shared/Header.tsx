@@ -10,9 +10,10 @@ const STEPS: { key: AppPage; label: string }[] = [
 
 interface HeaderProps {
   currentPage: AppPage;
+  actions?: React.ReactNode;
 }
 
-export default function Header({ currentPage }: HeaderProps) {
+export default function Header({ currentPage, actions }: HeaderProps) {
   const currentIndex = STEPS.findIndex((s) => s.key === currentPage);
 
   return (
@@ -21,21 +22,24 @@ export default function Header({ currentPage }: HeaderProps) {
         📐 Teacher <span className="font-medium text-text-primary">Copilot</span>
       </h1>
 
-      <div className="ml-auto flex items-center gap-1">
-        {STEPS.map((step, i) => {
-          let bgClass = "bg-background text-text-muted";
-          if (i < currentIndex) bgClass = "bg-[#DCFCE7] text-[#15803D]";
-          else if (i === currentIndex) bgClass = "bg-primary text-white";
+      <div className="ml-auto flex items-center gap-3">
+        {actions}
+        <div className="flex items-center gap-1">
+          {STEPS.map((step, i) => {
+            let bgClass = "bg-background text-text-muted";
+            if (i < currentIndex) bgClass = "bg-[#DCFCE7] text-[#15803D]";
+            else if (i === currentIndex) bgClass = "bg-primary text-white";
 
-          return (
-            <span
-              key={step.key}
-              className={`rounded-full px-3 py-1 text-xs font-medium ${bgClass}`}
-            >
-              {i + 1} {step.label}
-            </span>
-          );
-        })}
+            return (
+              <span
+                key={step.key}
+                className={`rounded-full px-3 py-1 text-xs font-medium ${bgClass}`}
+              >
+                {i + 1} {step.label}
+              </span>
+            );
+          })}
+        </div>
       </div>
     </header>
   );
