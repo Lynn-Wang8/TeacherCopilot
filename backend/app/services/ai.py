@@ -110,7 +110,7 @@ _AI_CONFIG = {
     "deepseek":    {"base_url": "https://api.deepseek.com",          "model": "deepseek-chat"},
     "openai":      {"base_url": "https://api.openai.com/v1",         "model": "gpt-4o"},
     "qwen":        {"base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1", "model": "qwen-vl-plus"},
-    "glm":         {"base_url": "https://open.bigmodel.cn/api/paas/v4", "model": "glm-4v"},
+    "glm":         {"base_url": "https://open.bigmodel.cn/api/paas/v4", "model": "glm-4v-flash"},
     "moonshot":    {"base_url": "https://api.moonshot.cn/v1",        "model": "moonshot-v1-8k"},
 }
 

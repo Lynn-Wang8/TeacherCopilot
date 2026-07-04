@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ChapterData } from "@/types";
 import Header from "@/components/shared/Header";
 import UploadPage from "@/components/upload/UploadPage";
 import AnalysisPage from "@/components/analysis/AnalysisPage";
@@ -11,12 +12,12 @@ type AppPage = "upload" | "analysis" | "workspace";
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<AppPage>("upload");
   const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
+  const [analysisResult, setAnalysisResult] = useState<ChapterData | null>(null);
 
   return (
     <div className="flex min-h-screen flex-col">
       <Header currentPage={currentPage} />
 
-      {/* ── Page 1: Upload ── */}
       {currentPage === "upload" && (
         <UploadPage
           onStartAnalysis={(files) => {
@@ -26,17 +27,20 @@ export default function Home() {
         />
       )}
 
-      {/* ── Page 2: Analysis ── */}
       {currentPage === "analysis" && (
         <AnalysisPage
           fileCount={uploadedFileNames.length}
-          onComplete={() => setCurrentPage("workspace")}
+          onComplete={(data) => {
+            setAnalysisResult(data);
+            setCurrentPage("workspace");
+          }}
           onRetry={() => setCurrentPage("upload")}
         />
       )}
 
-      {/* ── Page 3: Workspace ── */}
-      {currentPage === "workspace" && <WorkspacePage />}
+      {currentPage === "workspace" && (
+        <WorkspacePage initialData={analysisResult} />
+      )}
     </div>
   );
 }

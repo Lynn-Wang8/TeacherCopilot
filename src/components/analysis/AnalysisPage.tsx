@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import type { AnalysisStep } from "@/types";
+import type { AnalysisStep, ChapterData } from "@/types";
+import { analyzeQuestions } from "@/data/api";
+import mockQuestions from "@/data/mockQuestions";
 import Pipeline from "./Pipeline";
 
 interface AnalysisPageProps {
   fileCount: number;
-  onComplete: () => void;
+  onComplete: (data: ChapterData) => void;
   onRetry: () => void;
 }
 
@@ -18,8 +20,9 @@ export default function AnalysisPage({
   const [status, setStatus] = useState<"waiting" | "running" | "completed" | "failed">("waiting");
   const [currentStep, setCurrentStep] = useState<AnalysisStep | null>(null);
   const [failedStep, setFailedStep] = useState<AnalysisStep | null>(null);
-  const [questionCount, setQuestionCount] = useState(0);
+  const [errorMsg, setErrorMsg] = useState("");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resultRef = useRef<ChapterData | null>(null);
 
   useEffect(() => {
     startPipeline();
@@ -28,9 +31,10 @@ export default function AnalysisPage({
     };
   }, []);
 
-  function startPipeline() {
+  async function startPipeline() {
     setStatus("running");
     setFailedStep(null);
+    setErrorMsg("");
     setCurrentStep(null);
 
     const steps: AnalysisStep[] = [
@@ -42,26 +46,34 @@ export default function AnalysisPage({
       "json_generation",
     ];
 
+    // 播放 Pipeline 动画（最后一步触发真实 API 调用）
     steps.forEach((step, i) => {
-      timerRef.current = setTimeout(() => {
+      timerRef.current = setTimeout(async () => {
         setCurrentStep(step);
 
-        // Simulate occasional failure on step 2 (for demo)
-        // In real implementation, this comes from API error
-        if (step === "segmentation" && Math.random() < 0.05) {
-          setFailedStep(step);
-          setStatus("failed");
-          return;
-        }
-
         if (i === steps.length - 1) {
-          // Last step: complete
-          timerRef.current = setTimeout(() => {
-            setCurrentStep(null);
-            setStatus("completed");
-            // Random question count 5-12
-            setQuestionCount(Math.floor(Math.random() * 8) + 5);
-          }, 600);
+          // 最后一步：调用真实 AI API
+          try {
+            const qs = mockQuestions.questions.slice(0, 8).map((q) => ({
+              question_id: q.question_id,
+              order: q.order,
+              ocr_text: q.ocr_text,
+            }));
+
+            const data = await analyzeQuestions("triangle", "专题03 三角形", qs);
+
+            resultRef.current = data;
+
+            timerRef.current = setTimeout(() => {
+              setCurrentStep(null);
+              setStatus("completed");
+            }, 600);
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : "未知错误";
+            setFailedStep("json_generation");
+            setErrorMsg(msg);
+            setStatus("failed");
+          }
         }
       }, (i + 1) * 900);
     });
@@ -73,20 +85,15 @@ export default function AnalysisPage({
         <div className="w-full max-w-[520px] rounded-card border border-border bg-surface p-12 text-center shadow-card">
           <div className="mb-4 text-5xl">⚠️</div>
           <h2 className="mb-2 text-xl font-bold">分析失败</h2>
-          <p className="mb-8 text-text-secondary">
-            {failedStep === "segmentation"
-              ? "题目切分失败，请确认图片清晰度后重试。"
-              : "AI 分析过程中出现错误，请重试。"}
-          </p>
+          <p className="mb-4 text-text-secondary">{errorMsg || "AI 分析过程中出现错误"}</p>
           <Pipeline currentStep={null} failedStep={failedStep} />
           <button
             onClick={() => {
               onRetry();
-              startPipeline();
             }}
             className="mt-6 rounded-btn bg-primary px-8 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
           >
-            🔄 重新分析
+            🔄 重新上传
           </button>
         </div>
       </div>
@@ -94,6 +101,8 @@ export default function AnalysisPage({
   }
 
   if (status === "completed") {
+    const count = resultRef.current?.questions.length ?? 0;
+    const types = new Set(resultRef.current?.questions.map((q) => q.question_type.id) ?? []);
     return (
       <div className="flex flex-1 items-center justify-center p-10">
         <div className="w-full max-w-[520px] rounded-card border border-border bg-surface p-12 text-center shadow-card">
@@ -101,12 +110,12 @@ export default function AnalysisPage({
           <h2 className="mb-1 text-xl font-bold">🎉 分析完成！</h2>
           <p className="mb-8 text-text-secondary">
             共识别{" "}
-            <strong className="text-text-primary">{questionCount}</strong>{" "}
-            道题目，覆盖 <strong className="text-text-primary">6</strong> 个题型
+            <strong className="text-text-primary">{count}</strong>{" "}
+            道题目，覆盖 <strong className="text-text-primary">{types.size}</strong> 个题型
           </p>
           <Pipeline currentStep={null} isComplete />
           <button
-            onClick={onComplete}
+            onClick={() => resultRef.current && onComplete(resultRef.current)}
             className="mt-6 rounded-btn bg-primary px-8 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
           >
             进入工作台 →
@@ -116,7 +125,6 @@ export default function AnalysisPage({
     );
   }
 
-  // Running state
   return (
     <div className="flex flex-1 items-center justify-center p-10">
       <div className="w-full max-w-[520px] rounded-card border border-border bg-surface p-12 text-center shadow-card">

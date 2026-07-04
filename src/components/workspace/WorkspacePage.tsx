@@ -9,16 +9,21 @@ import QuestionList from "./QuestionList";
 import Inspector from "./Inspector";
 import ExportDrawer from "@/components/export/ExportDrawer";
 
-export default function WorkspacePage() {
-  const [data, setData] = useState<ChapterData | null>(null);
-  const [loading, setLoading] = useState(true);
+interface WorkspacePageProps {
+  initialData?: ChapterData | null;
+}
+
+export default function WorkspacePage({ initialData }: WorkspacePageProps) {
+  const [data, setData] = useState<ChapterData | null>(initialData ?? null);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [showExport, setShowExport] = useState(false);
 
-  // 首次加载：从后端 API 获取数据
+  // 首次加载：优先用 AI 分析结果，否则从 API 获取
   useEffect(() => {
+    if (initialData) return; // 已有 AI 结果，跳过 fetch
     fetchChapter("triangle")
       .then((chapterData) => {
         setData(chapterData);
@@ -28,7 +33,7 @@ export default function WorkspacePage() {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
+  }, [initialData]);
 
   // 教师自定义：章节 / 题型 / 易错点 / 几何模型
   const [customChapters, setCustomChapters] = useState<Reference[]>([]);
