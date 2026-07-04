@@ -14,22 +14,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header
-        currentPage={currentPage}
-        actions={
-          currentPage === "workspace" ? (
-            <button
-              onClick={() => {
-                // TODO: Phase 6 — Export Drawer
-                alert("导出功能将在 Phase 6 实现");
-              }}
-              className="rounded-btn bg-primary px-4 py-1.5 text-xs font-semibold text-white hover:bg-primary-hover"
-            >
-              📄 导出 Word
-            </button>
-          ) : undefined
-        }
-      />
+      <Header currentPage={currentPage} />
 
       {/* ── Page 1: Upload ── */}
       {currentPage === "upload" && (
@@ -51,14 +36,7 @@ export default function Home() {
       )}
 
       {/* ── Page 3: Workspace ── */}
-      {currentPage === "workspace" && (
-        <WorkspacePage
-          onExport={() => {
-            // TODO: Phase 6 — Export Drawer
-            alert("导出功能将在 Phase 6 实现");
-          }}
-        />
-      )}
+      {currentPage === "workspace" && <WorkspacePage />}
     </div>
   );
 }

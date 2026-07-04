@@ -4,19 +4,16 @@ import { useState, useMemo } from "react";
 import type { ChapterData, Question, Reference } from "@/types";
 import mockChapterData from "@/data/mockQuestions";
 import { QUESTION_TYPES, COMMON_MISTAKES, GEOMETRY_MODELS } from "@/data/skills";
-import StatsBar from "./StatsBar";
 import Sidebar from "./Sidebar";
 import QuestionList from "./QuestionList";
 import Inspector from "./Inspector";
+import ExportDrawer from "@/components/export/ExportDrawer";
 
-interface WorkspacePageProps {
-  onExport: () => void;
-}
-
-export default function WorkspacePage({ onExport }: WorkspacePageProps) {
+export default function WorkspacePage() {
   const [data, setData] = useState<ChapterData>(structuredClone(mockChapterData));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [showExport, setShowExport] = useState(false);
 
   // 教师自定义：章节 / 题型 / 易错点 / 几何模型
   const [customChapters, setCustomChapters] = useState<Reference[]>([]);
@@ -180,12 +177,19 @@ export default function WorkspacePage({ onExport }: WorkspacePageProps) {
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      <StatsBar
-        totalQuestions={data.questions.length}
-        typeCount={typeIds.size}
-        accuracy={avgAccuracy}
-        chapterName={data.chapter.name}
-      />
+      {/* Toolbar */}
+      <div className="flex items-center justify-between border-b border-border bg-surface px-5 py-2">
+        <span className="text-[13px] text-text-secondary">
+          📊 共 <strong className="text-text-primary">{data.questions.length}</strong> 道题 ·{" "}
+          覆盖 <strong className="text-text-primary">{typeIds.size}</strong> 个题型
+        </span>
+        <button
+          onClick={() => setShowExport(true)}
+          className="rounded-btn bg-primary px-4 py-1.5 text-xs font-semibold text-white hover:bg-primary-hover"
+        >
+          📄 导出 Word
+        </button>
+      </div>
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -238,6 +242,20 @@ export default function WorkspacePage({ onExport }: WorkspacePageProps) {
           </aside>
         )}
       </div>
+
+      {/* Export Drawer */}
+      <ExportDrawer
+        open={showExport}
+        chapterName={data.chapter.name}
+        questionCount={data.questions.length}
+        typeCount={typeIds.size}
+        onClose={() => setShowExport(false)}
+        onExport={(fileName, format) => {
+          setShowExport(false);
+          // TODO: Phase 9 — real DOCX generation
+          alert(`📄 导出成功！\n文件：${fileName}.${format}\n共 ${data.questions.length} 道题`);
+        }}
+      />
     </div>
   );
 }
