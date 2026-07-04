@@ -143,9 +143,16 @@ async def analyze_images(
             mode = "OCR + Mock 分类"
 
         # 把上传的图片 base64 填回 Question.image 字段
-        for i, q in enumerate(classified):
-            if i < len(base64_images):
-                q.image = base64_images[i]
+        # 当前 MVP：多题来自同张图时共享该图
+        # 完整版需要 Question Segmentation（图片切分）
+        if len(base64_images) == 1 and len(classified) > 1:
+            # 一张图含多道题 → 共享同一张整图
+            for q in classified:
+                q.image = base64_images[0]
+        else:
+            for i, q in enumerate(classified):
+                if i < len(base64_images):
+                    q.image = base64_images[i]
 
         chapter_data = ChapterData(
             chapter=Chapter(id=chapter_id, name=chapter_name, version="v1"),
