@@ -8,6 +8,7 @@ import Sidebar from "./Sidebar";
 import QuestionList from "./QuestionList";
 import Inspector from "./Inspector";
 import ExportDrawer from "@/components/export/ExportDrawer";
+import { exportDocx } from "@/data/api";
 
 interface WorkspacePageProps {
   initialData?: ChapterData | null;
@@ -324,10 +325,11 @@ export default function WorkspacePage({ initialData }: WorkspacePageProps) {
         questionCount={data.questions.length}
         typeCount={typeIds.size}
         onClose={() => setShowExport(false)}
-        onExport={(fileName, format) => {
+        onExport={(fileName) => {
           setShowExport(false);
-          // TODO: Phase 9 — real DOCX generation
-          alert(`📄 导出成功！\n文件：${fileName}.${format}\n共 ${data.questions.length} 道题`);
+          exportDocx(data, fileName).catch((err) =>
+            alert("导出失败: " + err.message),
+          );
         }}
       />
     </div>

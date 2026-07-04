@@ -8,7 +8,7 @@ interface ExportDrawerProps {
   questionCount: number;
   typeCount: number;
   onClose: () => void;
-  onExport: (fileName: string, format: "docx" | "pdf") => void;
+  onExport: (fileName: string) => void;
 }
 
 export default function ExportDrawer({
@@ -80,7 +80,7 @@ export default function ExportDrawer({
             取消
           </button>
           <button
-            onClick={() => onExport(fileName, format)}
+            onClick={() => onExport(fileName)}
             className="flex-1 rounded-btn bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover"
           >
             ⬇ 导出

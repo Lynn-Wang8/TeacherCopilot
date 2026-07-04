@@ -1,6 +1,31 @@
-import type { ChapterData, Question } from "@/types";
+import type { ChapterData } from "@/types";
 
 const API_BASE = "http://localhost:8000/api";
+
+/**
+ * 导出 DOCX 文件并触发浏览器下载
+ */
+export async function exportDocx(data: ChapterData, fileName: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/export/docx`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    throw new Error(`导出失败: ${res.status}`);
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${fileName}.docx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 /**
  * AI 分类题目
