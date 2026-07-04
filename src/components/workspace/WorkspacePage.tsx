@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { ChapterData, Question, Reference } from "@/types";
-import mockChapterData from "@/data/mockQuestions";
+import { fetchChapter } from "@/data/api";
 import { QUESTION_TYPES, COMMON_MISTAKES, GEOMETRY_MODELS } from "@/data/skills";
 import Sidebar from "./Sidebar";
 import QuestionList from "./QuestionList";
@@ -10,10 +10,25 @@ import Inspector from "./Inspector";
 import ExportDrawer from "@/components/export/ExportDrawer";
 
 export default function WorkspacePage() {
-  const [data, setData] = useState<ChapterData>(structuredClone(mockChapterData));
+  const [data, setData] = useState<ChapterData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [showExport, setShowExport] = useState(false);
+
+  // 首次加载：从后端 API 获取数据
+  useEffect(() => {
+    fetchChapter("triangle")
+      .then((chapterData) => {
+        setData(chapterData);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
 
   // 教师自定义：章节 / 题型 / 易错点 / 几何模型
   const [customChapters, setCustomChapters] = useState<Reference[]>([]);
@@ -51,12 +66,46 @@ export default function WorkspacePage() {
     data.questions.reduce((sum, q) => sum + q.confidence.question_type, 0) /
     Math.max(data.questions.length, 1);
 
+  // ── Loading / Error 状态 ──
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <div className="text-center">
+          <div className="mb-3 animate-spin text-3xl">⏳</div>
+          <p className="text-text-secondary">加载题目数据中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <div className="text-center">
+          <div className="mb-3 text-4xl">⚠️</div>
+          <p className="text-text-secondary">数据加载失败</p>
+          <p className="mt-1 text-sm text-text-muted">{error || "未知错误"}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 rounded-btn bg-primary px-6 py-2 text-sm font-semibold text-white hover:bg-primary-hover"
+          >
+            重试
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // ── Helpers ──
   function updateQuestion(id: string, updater: (q: Question) => Question) {
-    setData((prev) => ({
-      ...prev,
-      questions: prev.questions.map((q) => (q.question_id === id ? updater(q) : q)),
-    }));
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            questions: prev.questions.map((q) => (q.question_id === id ? updater(q) : q)),
+          }
+        : prev,
+    );
   }
 
   function handleAddManualQuestion(ocrText: string, typeId: string) {
@@ -76,22 +125,27 @@ export default function WorkspacePage() {
       confidence: { question_type: 0, common_mistake: 0, geometry_model: 0 },
       meta: { editable_by: { teacher_note: "teacher" } },
     };
-    setData((prev) => ({ ...prev, questions: [...prev.questions, newQ] }));
-    setSelectedId(nextId); // 自动选中新题目
+    setData((prev) =>
+      prev ? { ...prev, questions: [...prev.questions, newQ] } : prev,
+    );
+    setSelectedId(nextId);
   }
 
   function handleDeleteType(id: string) {
     // 移除自定义题型（Skill Library 题型也会被"隐藏"）
     setCustomTypes((prev) => prev.filter((t) => t.id !== id));
-    // 将该题型下的题目归入 unknown
-    setData((prev) => ({
-      ...prev,
-      questions: prev.questions.map((q) =>
-        q.question_type.id === id
-          ? { ...q, question_type: { id: "unknown", name: "待教师确认", version: "v1" } }
-          : q,
-      ),
-    }));
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            questions: prev.questions.map((q) =>
+              q.question_type.id === id
+                ? { ...q, question_type: { id: "unknown", name: "待教师确认", version: "v1" } }
+                : q,
+            ),
+          }
+        : prev,
+    );
     if (activeFilter === id) setActiveFilter(null);
   }
 
@@ -164,10 +218,14 @@ export default function WorkspacePage() {
   function handleDelete() {
     if (!selectedId) return;
     if (!confirm(`确定删除 ${selectedId} 吗？`)) return;
-    setData((prev) => ({
-      ...prev,
-      questions: prev.questions.filter((q) => q.question_id !== selectedId),
-    }));
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            questions: prev.questions.filter((q) => q.question_id !== selectedId),
+          }
+        : prev,
+    );
     setSelectedId(null);
   }
 
