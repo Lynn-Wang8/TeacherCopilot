@@ -92,46 +92,125 @@ model_05: 等角三角形中的半角模型
 
 
 # ── API 配置 ──
-# 支持 OpenAI / DeepSeek / 其他兼容 API
+# 两步分离：Vision（识图） + Classify（分类）
 # 通过环境变量切换：
-#   AI_PROVIDER=deepseek  (默认，便宜 20 倍)
-#   AI_API_KEY=sk-xxx
-#   AI_MODEL=deepseek-chat  (可选)
-#   AI_BASE_URL=https://api.deepseek.com  (可选)
+#
+#  分类模型（纯文本，必须）:
+#    AI_API_KEY=sk-xxx          API Key
+#    AI_PROVIDER=deepseek       默认 DeepSeek（便宜 20 倍）
+#    AI_MODEL=deepseek-chat     模型名
+#    AI_BASE_URL=https://api.deepseek.com
+#
+#  视觉模型（图片 OCR，可选）:
+#    VISION_API_KEY=sk-xxx      Vision API Key
+#    VISION_PROVIDER=qwen       默认 Qwen-VL（阿里，性价比高）
+#    VISION_MODEL=qwen-vl-plus  模型名
 
 _AI_CONFIG = {
-    "deepseek": {
-        "base_url": "https://api.deepseek.com",
-        "model": "deepseek-chat",
-    },
-    "openai": {
-        "base_url": "https://api.openai.com/v1",
-        "model": "gpt-4o",
-    },
+    "deepseek":    {"base_url": "https://api.deepseek.com",          "model": "deepseek-chat"},
+    "openai":      {"base_url": "https://api.openai.com/v1",         "model": "gpt-4o"},
+    "qwen":        {"base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1", "model": "qwen-vl-plus"},
+    "glm":         {"base_url": "https://open.bigmodel.cn/api/paas/v4", "model": "glm-4v"},
+    "moonshot":    {"base_url": "https://api.moonshot.cn/v1",        "model": "moonshot-v1-8k"},
 }
 
 _provider = os.environ.get("AI_PROVIDER", "deepseek").lower()
 _provider_config = _AI_CONFIG.get(_provider, _AI_CONFIG["deepseek"])
 
 
-def _get_api_config():
-    """获取当前 API 配置（base_url, model, api_key）"""
+def _get_api_config(for_vision: bool = False):
+    """获取 API 配置"""
+    if for_vision:
+        provider = os.environ.get("VISION_PROVIDER", "qwen").lower()
+        config = _AI_CONFIG.get(provider, _AI_CONFIG["qwen"])
+        base_url = os.environ.get("VISION_BASE_URL", config["base_url"])
+        model = os.environ.get("VISION_MODEL", config["model"])
+        api_key = os.environ.get("VISION_API_KEY", os.environ.get("AI_API_KEY", ""))
+        return base_url, model, api_key, provider
+
     base_url = os.environ.get("AI_BASE_URL", _provider_config["base_url"])
     model = os.environ.get("AI_MODEL", _provider_config["model"])
     api_key = os.environ.get("AI_API_KEY", os.environ.get("OPENAI_API_KEY", ""))
 
-    # 确保 base_url 以 /v1 结尾（OpenAI 兼容格式）
-    if not base_url.rstrip("/").endswith("/v1"):
-        if base_url.rstrip("/").endswith("/chat/completions"):
-            base_url = base_url.rsplit("/chat/completions", 1)[0]
-        # DeepSeek 不需要 /v1 后缀
-        if _provider != "deepseek" and not base_url.endswith("/v1"):
-            base_url = base_url.rstrip("/") + "/v1"
+    return base_url, model, api_key, _provider
 
-    return base_url, model, api_key
+
+async def _call_ai(messages: list[dict], for_vision: bool = False) -> str:
+    """统一的 AI API 调用（OpenAI 兼容格式）"""
+    import httpx
+
+    base_url, model, key, provider = _get_api_config(for_vision)
+
+    if not key:
+        raise ValueError(
+            f"未设置 API Key。{'Vision' if for_vision else '分类'} 模型需要 Key：\n"
+            f"  {'VISION_API_KEY' if for_vision else 'AI_API_KEY'}=sk-xxx\n"
+            f"获取: https://platform.deepseek.com/api_keys"
+        )
+
+    url = f"{base_url.rstrip('/')}/chat/completions"
+
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        response = await client.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": model,
+                "messages": messages,
+                "temperature": 0.1,
+                "max_tokens": 4096,
+            },
+        )
+
+        if response.status_code != 200:
+            raise RuntimeError(
+                f"{provider} API 调用失败 (HTTP {response.status_code}): {response.text[:500]}"
+            )
+
+        return response.json()["choices"][0]["message"]["content"]
 
 
 # ── API 调用 ──
+
+# ── 步骤 1：图片 OCR（可选，需要 Vision 模型）──
+
+async def ocr_images(image_urls: list[str]) -> list[str]:
+    """
+    使用 Vision 模型从图片中提取题目文字
+
+    Args:
+        image_urls: 图片 URL 或 base64 列表
+
+    Returns:
+        list[str]: 每张图片的 OCR 文字
+    """
+    results = []
+    for url in image_urls:
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": url},
+                    },
+                    {
+                        "type": "text",
+                        "text": "请提取这张图片中的数学题文字，只输出题目原文，不要添加解释。",
+                    },
+                ],
+            }
+        ]
+        text = await _call_ai(messages, for_vision=True)
+        results.append(text.strip())
+
+    return results
+
+
+# ── 步骤 2：题目分类（纯文本，DeepSeek 足够）──
 
 async def classify_questions(
     ocr_texts: list[dict],
@@ -142,66 +221,24 @@ async def classify_questions(
 
     Args:
         ocr_texts: [{"question_id": "Q001", "order": 1, "ocr_text": "..."}, ...]
-        api_key: API Key（默认从环境变量 AI_API_KEY 读取）
 
     Returns:
         list[Question]: Pydantic 模型列表
     """
-    base_url, model, key = _get_api_config()
-    key = api_key or key
-
-    if not key:
-        raise ValueError(
-            "未设置 AI_API_KEY。请设置环境变量：\n"
-            "  DeepSeek: AI_API_KEY=sk-xxx  (推荐，便宜 20 倍)\n"
-            "  OpenAI:   AI_PROVIDER=openai AI_API_KEY=sk-xxx\n"
-            "获取 Key: https://platform.deepseek.com/api_keys"
-        )
-
     # 构建用户消息
     user_message = "请对以下数学题目进行分类：\n\n"
     for item in ocr_texts:
         user_message += f"[{item['question_id']}] {item['ocr_text']}\n"
 
-    # 调用 API (OpenAI 兼容格式)
-    try:
-        import httpx
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_message},
+    ]
 
-        url = f"{base_url.rstrip('/')}/chat/completions"
-
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                url,
-                headers={
-                    "Authorization": f"Bearer {key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": model,
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": user_message},
-                    ],
-                    "temperature": 0.1,
-                    "max_tokens": 4096,
-                },
-            )
-
-            if response.status_code != 200:
-                error_detail = response.text
-                raise RuntimeError(
-                    f"AI API 调用失败 (HTTP {response.status_code}): {error_detail}"
-                )
-
-            result = response.json()
-            content = result["choices"][0]["message"]["content"]
-
-    except ImportError:
-        raise ImportError("需要安装 httpx：pip install httpx")
+    content = await _call_ai(messages, for_vision=False)
 
     # 解析 JSON 响应
-    questions = _parse_response(content, ocr_texts)
-    return questions
+    return _parse_response(content, ocr_texts)
 
 
 def _parse_response(content: str, ocr_texts: list[dict]) -> list[Question]:
