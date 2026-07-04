@@ -10,6 +10,7 @@ interface InspectorProps {
   allMistakes: Reference[];
   allModels: Reference[];
   onCreateChapter: (name: string) => Reference;
+  onCreateType: (name: string) => Reference;
   onCreateMistake: (name: string) => Reference;
   onCreateModel: (name: string) => Reference;
   onUpdateType: (id: string) => void;
@@ -28,6 +29,7 @@ export default function Inspector({
   allMistakes,
   allModels,
   onCreateChapter,
+  onCreateType,
   onCreateMistake,
   onCreateModel,
   onUpdateType,
@@ -43,9 +45,11 @@ export default function Inspector({
 
   // 自定义输入状态（每个下拉独立）
   const [customChapter, setCustomChapter] = useState("");
+  const [customType, setCustomType] = useState("");
   const [customMistake, setCustomMistake] = useState("");
   const [customModel, setCustomModel] = useState("");
   const [showCustomChapter, setShowCustomChapter] = useState(false);
+  const [showCustomType, setShowCustomType] = useState(false);
   const [showCustomMistake, setShowCustomMistake] = useState(false);
   const [showCustomModel, setShowCustomModel] = useState(false);
 
@@ -106,17 +110,32 @@ export default function Inspector({
 
         {/* 题型分类 */}
         <Field label="题型分类">
-          <select
+          <CreatableSelect
             value={q.question_type.id}
-            onChange={(e) => onUpdateType(e.target.value)}
-            className="w-full rounded-btn border border-border bg-surface px-3 py-2 text-[13px] text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
-          >
-            {allTypes.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.name}
-              </option>
-            ))}
-          </select>
+            options={allTypes}
+            customValue={customType}
+            showCustom={showCustomType}
+            onSelect={(id) => {
+              if (id === CUSTOM_OPTION_VALUE) {
+                setShowCustomType(true);
+              } else {
+                setShowCustomType(false);
+                onUpdateType(id);
+              }
+            }}
+            onCustomChange={setCustomType}
+            onCustomCreate={() => {
+              const ref = onCreateType(customType);
+              setCustomType("");
+              setShowCustomType(false);
+              onUpdateType(ref.id); // 自动选中
+            }}
+            onCustomCancel={() => {
+              setShowCustomType(false);
+              setCustomType("");
+            }}
+            placeholder="新题型名称"
+          />
           <ConfidenceBar value={confQT} />
         </Field>
 

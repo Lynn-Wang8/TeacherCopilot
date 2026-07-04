@@ -178,6 +178,7 @@ export default function WorkspacePage({ onExport }: WorkspacePageProps) {
             allMistakes={allMistakes}
             allModels={allModels}
             onCreateChapter={makeCreateHandler(customChapters, setCustomChapters, "chapter")}
+            onCreateType={makeCreateHandler(customTypes, setCustomTypes, "custom_type")}
             onCreateMistake={makeCreateHandler(customMistakes, setCustomMistakes, "mistake")}
             onCreateModel={makeCreateHandler(customModels, setCustomModels, "model")}
             onUpdateType={handleUpdateType}
