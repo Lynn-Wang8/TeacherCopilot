@@ -40,9 +40,16 @@ export default function WorkspacePage({ initialData }: WorkspacePageProps) {
   const [customTypes, setCustomTypes] = useState<Reference[]>([]);
   const [customMistakes, setCustomMistakes] = useState<Reference[]>([]);
   const [customModels, setCustomModels] = useState<Reference[]>([]);
+  const [hiddenTypeIds, setHiddenTypeIds] = useState<Set<string>>(new Set());
 
-  // 统一列表
-  const allTypes = useMemo(() => [...QUESTION_TYPES, ...customTypes], [customTypes]);
+  // 统一列表（排除被教师删除的 Skill Library 题型）
+  const allTypes = useMemo(
+    () => [
+      ...QUESTION_TYPES.filter((t) => !hiddenTypeIds.has(t.id)),
+      ...customTypes,
+    ],
+    [customTypes, hiddenTypeIds],
+  );
   const allMistakes = useMemo(() => [...COMMON_MISTAKES, ...customMistakes], [customMistakes]);
   const allModels = useMemo(() => [...GEOMETRY_MODELS, ...customModels], [customModels]);
   const allChapters = useMemo(
@@ -139,8 +146,10 @@ export default function WorkspacePage({ initialData }: WorkspacePageProps) {
   }
 
   function handleDeleteType(id: string) {
-    // 移除自定义题型（Skill Library 题型也会被"隐藏"）
     setCustomTypes((prev) => prev.filter((t) => t.id !== id));
+    if (QUESTION_TYPES.some((t) => t.id === id)) {
+      setHiddenTypeIds((prev) => new Set(prev).add(id));
+    }
     setData((prev) =>
       prev
         ? {
