@@ -1,6 +1,7 @@
 # Teacher Copilot
 An AI-powered Error Organization System for Middle School Mathematics Teachers
 Transform exam papers into structured teaching materials in minutes.
+Built a domain-specific Skill Library for junior high school geometry classification, covering 7 triangle question types with structured recognition rules, knowledge points, misconception patterns and few-shot examples.
 ________________________________________
 # Overview
 Teacher Copilot is an AI-native teaching assistant designed for middle school mathematics teachers.
@@ -77,8 +78,9 @@ Supported Features
 •	Upload exam images
 •	OCR recognition
 •	Question segmentation
-•	Skill classification
-•	Error pattern generation
+•	Question type classification (7 types)
+•	Common mistake recognition (6 patterns)
+•	Geometry model recognition (5 models)
 •	Manual adjustment
 •	Word export
 Not Included
@@ -93,33 +95,61 @@ ________________________________________
 # AI Workflow
 Upload Images
         ↓
-OCR Recognition
+Vision Understanding（OCR + Math Recognition）
         ↓
 Question Segmentation
         ↓
-Knowledge Point Recognition
+Question Type Classification
         ↓
-Skill Classification
+Common Mistake Recognition
         ↓
-Error Pattern Analysis
+Geometry Model Recognition
         ↓
-Teacher Review
+Structured JSON Generation
         ↓
-Export Teaching Document
+Teacher Review & Edit
+        ↓
+Export Teaching Document（DOCX）
 Teacher Copilot is not designed to generate unrestricted AI responses.
 Instead, every question is transformed into structured teaching knowledge.
 ________________________________________
 # Skill Library
 Unlike general-purpose LLMs, Teacher Copilot classifies every question according to a predefined teaching Skill Library.
-Current MVP includes the Triangle chapter.
-Example:
-Skill ID	Skill
-01	Triangle Side Relationships
-02	Median / Altitude / Angle Bisector
-03	Interior & Exterior Angles
-04	Congruent Triangles
-05	Isosceles Triangle
-...	...
+Current MVP includes the Triangle chapter with three classification dimensions:
+
+Question Types (7 types)
+
+| ID | Skill |
+| --- | --- |
+| triangle_01 | 三角形三边关系应用 |
+| triangle_02 | 三角形内角和与外角角度计算 |
+| triangle_03 | 三角形重要线段性质应用 |
+| triangle_04 | 全等三角形及其性质 |
+| triangle_05 | 全等三角形基础判定证明（SAS/ASA/AAS/SSS） |
+| triangle_06 | 全等三角形辅助线问题 |
+| triangle_07 | 三角形折叠动态角度问题 |
+
+Common Mistakes (6 patterns)
+
+| ID | Pattern |
+| --- | --- |
+| mistake_01 | 三角形三边关系判断疏漏 |
+| mistake_02 | 钝角三角形高的位置判断错误 |
+| mistake_03 | SAS判定忽略"夹角"条件 |
+| mistake_04 | 全等三角形对应边、对应角找错 |
+| mistake_05 | 三角形中线、角平分线、高线概念混淆 |
+| mistake_06 | 未分类讨论（遗漏多解） |
+
+Geometry Models (5 models)
+
+| ID | Model |
+| --- | --- |
+| model_01 | 双角平分线模型（含 3 种子模型） |
+| model_02 | 倍长中线模型 |
+| model_03 | 一线三等角模型 |
+| model_04 | 手拉手旋转模型 |
+| model_05 | 等角三角形中的半角模型 |
+
 The Skill Library defines the teacher's thinking process instead of allowing AI to invent new categories.
 Teachers may also create custom skills when necessary.
 ________________________________________
@@ -129,14 +159,14 @@ Upload one or multiple examination images.
 Supported formats:
 •	JPG
 •	PNG
-•	PDF
+•	PDF（converted to images for processing）
 ________________________________________
 # AI Classification
 Automatically identify:
-•	Knowledge Point
-•	Skill
-•	Error Pattern
-•	Difficulty
+•	Question Type（based on Skill Library, 7 types）
+•	Common Mistake（6 patterns, optional — can be null）
+•	Geometry Model（5 models, optional — can be null）
+•	Confidence Score（0 ~ 1 per dimension, with evidence trace）
 ________________________________________
 # Human Review
 Teachers can:
@@ -153,18 +183,25 @@ Generate editable teaching documents.
 Example:
 Triangle Error Collection
 
-Skill 01
-Triangle Side Relationships
+Question Type 01
+三角形三边关系应用
 
 Question 1
-Knowledge Point
-...
 
-Error Pattern
-...
+Image
+[Original question image]
+
+OCR Text
+已知AB=5，AC=8，求BC的取值范围。
+
+Common Mistake
+忽略两边之和大于第三边
+
+Geometry Model
+无
 
 Teacher Note
-...
+课堂重点讲解辅助线作法
 
 --------------------------------
 
@@ -181,10 +218,14 @@ Structured First
 Every AI output must be structured.
 Example:
 {
-  "knowledge": "",
-  "skill": "",
-  "error_pattern": "",
-  "difficulty": "",
+  "question_type": { "id": "triangle_01", "name": "三角形三边关系应用" },
+  "common_mistake": { "id": "mistake_01", "name": "忽略两边之和大于第三边" },
+  "geometry_model": null,
+  "confidence": {
+    "question_type": 0.98,
+    "common_mistake": 0.91,
+    "geometry_model": 0
+  },
   "teacher_note": ""
 }
 Structured data enables editing, exporting and future expansion.
@@ -227,49 +268,57 @@ ________________________________________
 Frontend
 •	Next.js
 •	React
+•	TypeScript
 •	Tailwind CSS
 Backend
 •	FastAPI
 AI
-•	OpenAI API
-•	OCR
+•	OpenAI API（Vision + Structured Output）
 •	Prompt Engineering
-•	Structured Output
 Export
-•	DOCX Generator
+•	python-docx
 ________________________________________
 # Roadmap
-Version 1.0
-•	Triangle chapter
-•	AI classification
-•	Editable workspace
-•	Word export
-________________________________________
+Version 1.0（MVP）
+•	Triangle chapter（专题03 三角形）
+•	7 question types + 6 common mistakes + 5 geometry models
+•	AI classification with confidence & evidence
+•	Editable workspace（three-column layout）
+•	DOCX export
+
 Version 2.0
-•	Multiple chapters
+•	Multiple chapters（四边形、圆、函数等）
 •	Personal question bank
 •	Classification history
 •	Search
-________________________________________
+•	PDF export
+
 Version 3.0
 •	Teaching knowledge graph
 •	AI lesson preparation
 •	Intelligent worksheet generation
 ________________________________________
 # Project Structure
-teacher-copilot/
+TeacherCopilot/
 
 README.md
+AGENTS.md
 
 docs/
+├── 00_PROJECT_STRUCTURE.md
 ├── 01_User_Journey.md
 ├── 02_User_Story.md
 ├── 03_Page_Spec.md
 ├── 04_AI_Flow.md
-├── 05_System_Architecture.md
-├── 06_Prompt_Design.md
-├── 07_Tech_Architecture.md
-├── 08_Development_Log.md
+├── 05_JSON_SCHEMA.md
+├── 06_TypeScript_Interface.md
+
+skills/
+└── triangle/
+    ├── 01_triangle_skills.json
+    └── triangle_examples.pdf
+
+prompts/
 
 frontend/
 
@@ -280,4 +329,3 @@ Lynn Wang
 AI Product Manager Portfolio Project
 ________________________________________
 Teachers should spend time teaching, not formatting Word documents.
-
