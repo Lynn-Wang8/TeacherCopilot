@@ -1,10 +1,11 @@
 "use client";
 
 import type { Question, Reference } from "@/types";
-import { QUESTION_TYPES, COMMON_MISTAKES, GEOMETRY_MODELS } from "@/data/skills";
+import { COMMON_MISTAKES, GEOMETRY_MODELS } from "@/data/skills";
 
 interface InspectorProps {
   question: Question;
+  allTypes: Reference[];
   onUpdateType: (id: string) => void;
   onUpdateMistake: (id: string | null) => void;
   onUpdateModel: (id: string | null) => void;
@@ -14,6 +15,7 @@ interface InspectorProps {
 
 export default function Inspector({
   question,
+  allTypes,
   onUpdateType,
   onUpdateMistake,
   onUpdateModel,
@@ -27,7 +29,6 @@ export default function Inspector({
 
   return (
     <aside className="flex w-inspector flex-shrink-0 flex-col overflow-y-auto border-l border-border bg-surface">
-      {/* Header */}
       <div className="border-b border-border px-5 py-4 text-[15px] font-semibold">
         📝 {q.question_id} 详情
       </div>
@@ -43,20 +44,16 @@ export default function Inspector({
         {/* OCR 文本 */}
         <Field label="OCR 识别文字">
           <textarea
-            value={q.ocr_text}
-            onChange={(e) => {
-              // ocr_text 可被教师修改（Edge case: OCR不完整）
-              // 当前版本暂存于本地 state
-            }}
+            defaultValue={q.ocr_text}
             className="min-h-[80px] w-full resize-y rounded-btn border border-border bg-surface px-3 py-2 text-[13px] text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
           />
         </Field>
 
-        {/* 题型分类 */}
+        {/* 题型分类 — 下拉来自 Sidebar 的全部题型 */}
         <Field label="题型分类">
           <SelectField
             value={q.question_type.id}
-            options={QUESTION_TYPES}
+            options={allTypes}
             onChange={(id) => onUpdateType(id)}
           />
           <ConfidenceBar value={confQT} />
@@ -87,7 +84,7 @@ export default function Inspector({
         {/* 教师备注 */}
         <Field label="教师备注">
           <textarea
-            value={q.teacher_note}
+            defaultValue={q.teacher_note}
             onChange={(e) => onUpdateNote(e.target.value)}
             placeholder="输入教学备注..."
             className="min-h-[80px] w-full resize-y rounded-btn border border-border bg-surface px-3 py-2 text-[13px] text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
@@ -108,13 +105,7 @@ export default function Inspector({
 
 /* ── Helpers ── */
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-xs font-semibold uppercase tracking-wide text-text-muted">
