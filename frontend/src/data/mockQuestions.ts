@@ -1,0 +1,276 @@
+import { type ChapterData } from "@/types";
+
+/**
+ * Mock 题目数据 — 8 道三角形题目
+ *
+ * 数据来源：data/mock_questions.json
+ * Question 以 id 引用 skills/triangle/01_triangle_skills.json 中的 Skill
+ *
+ * 以后替换为 API：
+ *   const res = await fetch("/api/chapter/triangle");
+ *   const data: ChapterData = await res.json();
+ */
+const mockQuestions: ChapterData = {
+  chapter: {
+    id: "triangle",
+    name: "专题03 三角形",
+    version: "v1",
+  },
+  questions: [
+    {
+      question_id: "Q001",
+      order: 1,
+      image: "/mock/q001.png",
+      ocr_text: "已知AB=5，AC=8，求BC的取值范围。",
+      question_type: {
+        id: "triangle_01",
+        name: "三角形三边关系应用",
+        version: "v1",
+      },
+      common_mistake: {
+        id: "mistake_01",
+        name: "三角形三边关系判断疏漏",
+        version: "v1",
+      },
+      geometry_model: null,
+      teacher_note: "",
+      confidence: {
+        question_type: 0.98,
+        common_mistake: 0.91,
+        geometry_model: 0,
+        evidence: {
+          question_type: ["两边之和大于第三边", "取值范围", "AB+AC>BC"],
+          common_mistake: ["两边之差", "第三边范围"],
+          geometry_model: [],
+        },
+      },
+      meta: {
+        editable_by: { teacher_note: "teacher" },
+      },
+    },
+    {
+      question_id: "Q002",
+      order: 2,
+      image: "/mock/q002.png",
+      ocr_text: "在△ABC中，∠A=50°，∠B=70°，求∠C的度数。",
+      question_type: {
+        id: "triangle_02",
+        name: "三角形内角和与外角角度计算",
+        version: "v1",
+      },
+      common_mistake: null,
+      geometry_model: null,
+      teacher_note: "基础题，注意外角拓展",
+      confidence: {
+        question_type: 0.99,
+        common_mistake: 0,
+        geometry_model: 0,
+        evidence: {
+          question_type: ["内角和", "角度", "∠A", "180°"],
+          common_mistake: [],
+          geometry_model: [],
+        },
+      },
+      meta: {
+        editable_by: { teacher_note: "teacher" },
+      },
+    },
+    {
+      question_id: "Q003",
+      order: 3,
+      image: "/mock/q003.png",
+      ocr_text:
+        "如图，AD是△ABC的中线，BE是角平分线，求证：S△ABD=S△ACD。",
+      question_type: {
+        id: "triangle_03",
+        name: "三角形重要线段性质应用",
+        version: "v1",
+      },
+      common_mistake: {
+        id: "mistake_05",
+        name: "三角形中线、角平分线、高线概念混淆",
+        version: "v1",
+      },
+      geometry_model: null,
+      teacher_note: "",
+      confidence: {
+        question_type: 0.95,
+        common_mistake: 0.88,
+        geometry_model: 0,
+        evidence: {
+          question_type: ["中线", "角平分线", "重要线段"],
+          common_mistake: ["中线性质", "角平分线定义", "高线"],
+          geometry_model: [],
+        },
+      },
+      meta: {
+        editable_by: { teacher_note: "teacher" },
+      },
+    },
+    {
+      question_id: "Q004",
+      order: 4,
+      image: "/mock/q004.png",
+      ocr_text:
+        "已知△ABC≌△DEF，AB=6cm，∠B=45°，求DE的长和∠E的度数。",
+      question_type: {
+        id: "triangle_04",
+        name: "全等三角形及其性质",
+        version: "v1",
+      },
+      common_mistake: {
+        id: "mistake_04",
+        name: "全等三角形对应边、对应角找错",
+        version: "v1",
+      },
+      geometry_model: null,
+      teacher_note: "",
+      confidence: {
+        question_type: 0.97,
+        common_mistake: 0.85,
+        geometry_model: 0,
+        evidence: {
+          question_type: ["全等", "≌", "对应边", "对应角"],
+          common_mistake: ["对应顶点", "对应关系"],
+          geometry_model: [],
+        },
+      },
+      meta: {
+        editable_by: { teacher_note: "teacher" },
+      },
+    },
+    {
+      question_id: "Q005",
+      order: 5,
+      image: "/mock/q005.png",
+      ocr_text:
+        "如图，AB=DE，∠B=∠E，BC=EF。求证：△ABC≌△DEF。",
+      question_type: {
+        id: "triangle_05",
+        name: "全等三角形基础判定证明（SAS/ASA/AAS/SSS）",
+        version: "v1",
+      },
+      common_mistake: {
+        id: "mistake_03",
+        name: "SAS判定忽略「夹角」条件",
+        version: "v1",
+      },
+      geometry_model: null,
+      teacher_note: "强调SAS中角必须是夹角",
+      confidence: {
+        question_type: 0.96,
+        common_mistake: 0.92,
+        geometry_model: 0,
+        evidence: {
+          question_type: ["SAS", "判定", "全等", "求证"],
+          common_mistake: ["夹角", "SAS", "边角边"],
+          geometry_model: [],
+        },
+      },
+      meta: {
+        editable_by: { teacher_note: "teacher" },
+      },
+    },
+    {
+      question_id: "Q006",
+      order: 6,
+      image: "/mock/q006.png",
+      ocr_text: "AD是△ABC的中线。求证：AB+AC>2AD。",
+      question_type: {
+        id: "triangle_06",
+        name: "全等三角形辅助线问题",
+        version: "v1",
+      },
+      common_mistake: null,
+      geometry_model: {
+        id: "model_02",
+        name: "倍长中线模型",
+        version: "v1",
+      },
+      teacher_note: "课堂重点讲解辅助线作法",
+      confidence: {
+        question_type: 0.94,
+        common_mistake: 0,
+        geometry_model: 0.97,
+        evidence: {
+          question_type: ["辅助线", "中线", "倍长"],
+          common_mistake: [],
+          geometry_model: ["倍长中线", "延长AD", "中线"],
+        },
+      },
+      meta: {
+        editable_by: { teacher_note: "teacher" },
+      },
+    },
+    {
+      question_id: "Q007",
+      order: 7,
+      image: "/mock/q007.png",
+      ocr_text:
+        "如图，将△ABC沿DE折叠，使点A落在BC上的点A'处。若∠A=40°，求∠1+∠2的度数。",
+      question_type: {
+        id: "triangle_07",
+        name: "三角形折叠动态角度问题",
+        version: "v1",
+      },
+      common_mistake: {
+        id: "mistake_06",
+        name: "未分类讨论（遗漏多解）",
+        version: "v1",
+      },
+      geometry_model: null,
+      teacher_note: "",
+      confidence: {
+        question_type: 0.93,
+        common_mistake: 0.79,
+        geometry_model: 0,
+        evidence: {
+          question_type: ["折叠", "折纸", "动态", "角度"],
+          common_mistake: ["分类讨论", "两种情况"],
+          geometry_model: [],
+        },
+      },
+      meta: {
+        editable_by: { teacher_note: "teacher" },
+      },
+    },
+    {
+      question_id: "Q008",
+      order: 8,
+      image: "/mock/q008.png",
+      ocr_text:
+        "如图，BP平分∠ABC，CP平分∠ACB。若∠A=60°，求∠BPC的度数。",
+      question_type: {
+        id: "triangle_03",
+        name: "三角形重要线段性质应用",
+        version: "v1",
+      },
+      common_mistake: {
+        id: "mistake_02",
+        name: "钝角三角形高的位置判断错误",
+        version: "v1",
+      },
+      geometry_model: {
+        id: "model_01",
+        name: "双角平分线模型",
+        version: "v1",
+      },
+      teacher_note: "",
+      confidence: {
+        question_type: 0.91,
+        common_mistake: 0.72,
+        geometry_model: 0.96,
+        evidence: {
+          question_type: ["角平分线", "BP平分", "CP平分"],
+          common_mistake: ["高线位置", "钝角"],
+          geometry_model: ["双角平分线", "角平分线夹角", "∠BPC"],
+        },
+      },
+      meta: {
+        editable_by: { teacher_note: "teacher" },
+      },
+    },
+  ],
+};
+
+export default mockQuestions;
