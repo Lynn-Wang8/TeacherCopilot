@@ -142,6 +142,11 @@ async def analyze_images(
             classified = classify_questions_mock(questions_input)
             mode = "OCR + Mock 分类"
 
+        # 把上传的图片 base64 填回 Question.image 字段
+        for i, q in enumerate(classified):
+            if i < len(base64_images):
+                q.image = base64_images[i]
+
         chapter_data = ChapterData(
             chapter=Chapter(id=chapter_id, name=chapter_name, version="v1"),
             questions=classified,
