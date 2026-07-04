@@ -3,6 +3,40 @@ import type { ChapterData, Question } from "@/types";
 const API_BASE = "http://localhost:8000/api";
 
 /**
+ * AI 分类题目
+ *
+ * 发送 OCR 文本列表 → 后端调用 AI → 返回分类后的结构化数据
+ */
+export async function analyzeQuestions(
+  chapterId: string,
+  chapterName: string,
+  questions: { question_id: string; order: number; ocr_text: string }[],
+): Promise<ChapterData> {
+  const res = await fetch(`${API_BASE}/analyze`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chapter_id: chapterId,
+      chapter_name: chapterName,
+      questions,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `API 请求失败: ${res.status}`);
+  }
+
+  const json = await res.json();
+
+  if (!json.success) {
+    throw new Error(json.message || "未知错误");
+  }
+
+  return json.data as ChapterData;
+}
+
+/**
  * 获取章节完整数据
  *
  * 以后替换数据源只需改这里：
