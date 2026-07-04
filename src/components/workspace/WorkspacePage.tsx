@@ -18,16 +18,24 @@ export default function WorkspacePage({ onExport }: WorkspacePageProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
-  // 教师自定义题型（Skill Library 之外）
+  // 教师自定义：章节 / 题型 / 易错点 / 几何模型
+  const [customChapters, setCustomChapters] = useState<Reference[]>([]);
   const [customTypes, setCustomTypes] = useState<Reference[]>([]);
+  const [customMistakes, setCustomMistakes] = useState<Reference[]>([]);
+  const [customModels, setCustomModels] = useState<Reference[]>([]);
 
-  // 统一题型列表：Skill Library + 教师自定义
-  const allTypes: Reference[] = useMemo(
-    () => [...QUESTION_TYPES, ...customTypes],
-    [customTypes],
+  // 统一列表
+  const allTypes = useMemo(() => [...QUESTION_TYPES, ...customTypes], [customTypes]);
+  const allMistakes = useMemo(() => [...COMMON_MISTAKES, ...customMistakes], [customMistakes]);
+  const allModels = useMemo(() => [...GEOMETRY_MODELS, ...customModels], [customModels]);
+  const allChapters = useMemo(
+    () => [
+      { id: data.chapter.id, name: data.chapter.name, version: data.chapter.version },
+      ...customChapters,
+    ],
+    [data.chapter, customChapters],
   );
 
-  // 按筛选条件过滤题目、按 order 排序
   const filteredQuestions = useMemo(() => {
     let list = data.questions;
     if (activeFilter) {
@@ -36,19 +44,17 @@ export default function WorkspacePage({ onExport }: WorkspacePageProps) {
     return list.sort((a, b) => a.order - b.order);
   }, [data.questions, activeFilter]);
 
-  // 选中题目
   const selectedQuestion = useMemo(
     () => data.questions.find((q) => q.question_id === selectedId) ?? null,
     [data.questions, selectedId],
   );
 
-  // 统计（不受筛选影响）
   const typeIds = new Set(data.questions.map((q) => q.question_type.id));
   const avgAccuracy =
     data.questions.reduce((sum, q) => sum + q.confidence.question_type, 0) /
     Math.max(data.questions.length, 1);
 
-  // ── Actions ──
+  // ── Helpers ──
   function updateQuestion(id: string, updater: (q: Question) => Question) {
     setData((prev) => ({
       ...prev,
@@ -56,18 +62,23 @@ export default function WorkspacePage({ onExport }: WorkspacePageProps) {
     }));
   }
 
-  function handleCreateCustomType(name: string) {
-    if (!name.trim()) return;
-    // 生成唯一 id：custom_01, custom_02, ...
-    const nextNum = customTypes.length + 1;
-    const id = `custom_${String(nextNum).padStart(2, "0")}`;
-    const newType: Reference = { id, name: name.trim(), version: "v1" };
-    setCustomTypes((prev) => [...prev, newType]);
+  function makeCreateHandler(
+    list: Reference[],
+    setter: (fn: (prev: Reference[]) => Reference[]) => void,
+    prefix: string,
+  ) {
+    return (name: string): Reference => {
+      const nextNum = list.length + 1;
+      const id = `${prefix}_${String(nextNum).padStart(2, "0")}`;
+      const ref: Reference = { id, name: name.trim(), version: "v1" };
+      setter((prev) => [...prev, ref]);
+      return ref;
+    };
   }
 
+  // ── Update handlers ──
   function handleUpdateType(id: string) {
     if (!selectedId) return;
-    // 在统一列表中查找（Skill Library + 自定义）
     const type = allTypes.find((t) => t.id === id);
     if (!type) return;
     updateQuestion(selectedId, (q) => ({
@@ -85,7 +96,7 @@ export default function WorkspacePage({ onExport }: WorkspacePageProps) {
         confidence: { ...q.confidence, common_mistake: 0 },
       }));
     } else {
-      const mistake = COMMON_MISTAKES.find((m) => m.id === id);
+      const mistake = allMistakes.find((m) => m.id === id);
       if (!mistake) return;
       updateQuestion(selectedId, (q) => ({
         ...q,
@@ -103,7 +114,7 @@ export default function WorkspacePage({ onExport }: WorkspacePageProps) {
         confidence: { ...q.confidence, geometry_model: 0 },
       }));
     } else {
-      const model = GEOMETRY_MODELS.find((m) => m.id === id);
+      const model = allModels.find((m) => m.id === id);
       if (!model) return;
       updateQuestion(selectedId, (q) => ({
         ...q,
@@ -141,7 +152,6 @@ export default function WorkspacePage({ onExport }: WorkspacePageProps) {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Skill Tree */}
         <Sidebar
           chapter={data.chapter}
           allTypes={allTypes}
@@ -151,21 +161,25 @@ export default function WorkspacePage({ onExport }: WorkspacePageProps) {
             setActiveFilter(typeId);
             setSelectedId(null);
           }}
-          onCreateCustomType={handleCreateCustomType}
+          onCreateCustomType={makeCreateHandler(customTypes, setCustomTypes, "custom_type")}
         />
 
-        {/* Center: Question Cards */}
         <QuestionList
           questions={filteredQuestions}
           selectedId={selectedId}
           onSelect={handleSelect}
         />
 
-        {/* Right: Inspector */}
         {selectedQuestion ? (
           <Inspector
             question={selectedQuestion}
+            allChapters={allChapters}
             allTypes={allTypes}
+            allMistakes={allMistakes}
+            allModels={allModels}
+            onCreateChapter={makeCreateHandler(customChapters, setCustomChapters, "chapter")}
+            onCreateMistake={makeCreateHandler(customMistakes, setCustomMistakes, "mistake")}
+            onCreateModel={makeCreateHandler(customModels, setCustomModels, "model")}
             onUpdateType={handleUpdateType}
             onUpdateMistake={handleUpdateMistake}
             onUpdateModel={handleUpdateModel}
