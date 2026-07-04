@@ -11,7 +11,7 @@ type AppPage = "upload" | "analysis" | "workspace";
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<AppPage>("upload");
-  const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [analysisResult, setAnalysisResult] = useState<ChapterData | null>(null);
 
   return (
@@ -21,7 +21,7 @@ export default function Home() {
       {currentPage === "upload" && (
         <UploadPage
           onStartAnalysis={(files) => {
-            setUploadedFileNames(files.map((f) => f.name));
+            setUploadedFiles(files);
             setCurrentPage("analysis");
           }}
         />
@@ -29,7 +29,8 @@ export default function Home() {
 
       {currentPage === "analysis" && (
         <AnalysisPage
-          fileCount={uploadedFileNames.length}
+          fileCount={uploadedFiles.length}
+          uploadedFiles={uploadedFiles}
           onComplete={(data) => {
             setAnalysisResult(data);
             setCurrentPage("workspace");

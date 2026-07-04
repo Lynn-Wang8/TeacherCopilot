@@ -2,18 +2,20 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { AnalysisStep, ChapterData } from "@/types";
-import { analyzeQuestions } from "@/data/api";
+import { analyzeQuestions, analyzeImages } from "@/data/api";
 import mockQuestions from "@/data/mockQuestions";
 import Pipeline from "./Pipeline";
 
 interface AnalysisPageProps {
   fileCount: number;
+  uploadedFiles: File[];
   onComplete: (data: ChapterData) => void;
   onRetry: () => void;
 }
 
 export default function AnalysisPage({
   fileCount,
+  uploadedFiles,
   onComplete,
   onRetry,
 }: AnalysisPageProps) {
@@ -54,13 +56,20 @@ export default function AnalysisPage({
         if (i === steps.length - 1) {
           // 最后一步：调用真实 AI API
           try {
-            const qs = mockQuestions.questions.slice(0, 8).map((q) => ({
-              question_id: q.question_id,
-              order: q.order,
-              ocr_text: q.ocr_text,
-            }));
+            let data: ChapterData;
 
-            const data = await analyzeQuestions("triangle", "专题03 三角形", qs);
+            if (uploadedFiles.length > 0) {
+              // 有真实图片 → 图片上传 → 智谱 OCR → DeepSeek 分类
+              data = await analyzeImages("triangle", "专题03 三角形", uploadedFiles);
+            } else {
+              // Demo 模式 → 用 Mock 文本 → DeepSeek 分类
+              const qs = mockQuestions.questions.slice(0, 8).map((q) => ({
+                question_id: q.question_id,
+                order: q.order,
+                ocr_text: q.ocr_text,
+              }));
+              data = await analyzeQuestions("triangle", "专题03 三角形", qs);
+            }
 
             resultRef.current = data;
 

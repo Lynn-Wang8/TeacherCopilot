@@ -11,6 +11,7 @@ const MAX_SIZE = 20 * 1024 * 1024;
 
 interface UseUploadReturn {
   files: UploadImage[];
+  rawFiles: File[];
   status: "empty" | "uploading" | "uploaded" | "error";
   error: string | null;
   addFiles: (fileList: FileList | File[]) => void;
@@ -20,6 +21,7 @@ interface UseUploadReturn {
 
 export function useUpload(): UseUploadReturn {
   const [files, setFiles] = useState<UploadImage[]>([]);
+  const [rawFiles, setRawFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<UseUploadReturn["status"]>("empty");
   const [error, setError] = useState<string | null>(null);
 
@@ -55,12 +57,17 @@ export function useUpload(): UseUploadReturn {
       setStatus(updated.length > 0 ? "uploaded" : "empty");
       return updated;
     });
+    setRawFiles((prev) => [...prev, ...incoming]);
   }, []);
 
   const removeFile = useCallback((id: string) => {
     setFiles((prev) => {
       const file = prev.find((f) => f.id === id);
       if (file) URL.revokeObjectURL(file.preview_url);
+      const idx = prev.findIndex((f) => f.id === id);
+      if (idx >= 0) {
+        setRawFiles((prev2) => prev2.filter((_, i) => i !== idx));
+      }
       const updated = prev.filter((f) => f.id !== id);
       setStatus(updated.length > 0 ? "uploaded" : "empty");
       return updated;
@@ -70,9 +77,10 @@ export function useUpload(): UseUploadReturn {
   const clearAll = useCallback(() => {
     files.forEach((f) => URL.revokeObjectURL(f.preview_url));
     setFiles([]);
+    setRawFiles([]);
     setStatus("empty");
     setError(null);
   }, [files]);
 
-  return { files, status, error, addFiles, removeFile, clearAll };
+  return { files, rawFiles, status, error, addFiles, removeFile, clearAll };
 }

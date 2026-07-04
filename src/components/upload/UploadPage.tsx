@@ -9,7 +9,7 @@ interface UploadPageProps {
 }
 
 export default function UploadPage({ onStartAnalysis }: UploadPageProps) {
-  const { files, status, error, addFiles, removeFile } = useUpload();
+  const { files, rawFiles, status, error, addFiles, removeFile } = useUpload();
 
   const hasFiles = files.length > 0;
 
@@ -37,11 +37,6 @@ export default function UploadPage({ onStartAnalysis }: UploadPageProps) {
         {/* 开始分析按钮 */}
         <button
           onClick={() => {
-            const rawFiles = files.map((f) => {
-              // 从 blob URL 还原 File 对象（MVP 阶段保留引用）
-              // 后续接 API 时改为上传后拿到的 URL
-              return new File([], f.file_name);
-            });
             onStartAnalysis(rawFiles);
           }}
           disabled={!hasFiles}
