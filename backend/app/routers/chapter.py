@@ -59,6 +59,12 @@ def get_chapter(chapter_id: str):
 
     示例：GET /api/chapter/triangle
     """
+    # MVP 仅支持 triangle 章节
+    if chapter_id != "triangle":
+        raise HTTPException(
+            status_code=404,
+            detail=f"章节 '{chapter_id}' 不存在。当前仅支持: triangle",
+        )
     data = _load_chapter(chapter_id)
     return APIResponse(
         success=True,

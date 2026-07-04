@@ -8,35 +8,23 @@
     {
       "question_id": "Q001",
       "order": 1,
-      "image": "mock/q001.png",
-      "ocr_text": "已知AB=5，AC=8，求BC的取值范围。",
+      "image": "",
+      "ocr_text": "测试修改后的文字",
       "question_type": {
-        "id": "triangle_01",
-        "name": "三角形三边关系应用",
+        "id": "triangle_02",
+        "name": "三角形内角和与外角角度计算",
         "version": "v1"
       },
-      "common_mistake": {
-        "id": "mistake_01",
-        "name": "三角形三边关系判断疏漏",
-        "version": "v1"
-      },
+      "common_mistake": null,
       "geometry_model": null,
-      "teacher_note": "",
+      "teacher_note": "测试备注",
       "confidence": {
-        "question_type": 0.98,
-        "common_mistake": 0.91,
-        "geometry_model": 0,
-        "evidence": {
-          "question_type": ["两边之和大于第三边", "取值范围", "AB+AC>BC"],
-          "common_mistake": ["两边之差", "第三边范围"],
-          "geometry_model": []
-        }
+        "question_type": 0.99,
+        "common_mistake": 0.0,
+        "geometry_model": 0.0,
+        "evidence": null
       },
-      "meta": {
-        "editable_by": {
-          "teacher_note": "teacher"
-        }
-      }
+      "meta": null
     },
     {
       "question_id": "Q002",
@@ -53,10 +41,15 @@
       "teacher_note": "基础题，注意外角拓展",
       "confidence": {
         "question_type": 0.99,
-        "common_mistake": 0,
-        "geometry_model": 0,
+        "common_mistake": 0.0,
+        "geometry_model": 0.0,
         "evidence": {
-          "question_type": ["内角和", "角度", "∠A", "180°"],
+          "question_type": [
+            "内角和",
+            "角度",
+            "∠A",
+            "180°"
+          ],
           "common_mistake": [],
           "geometry_model": []
         }
@@ -87,10 +80,18 @@
       "confidence": {
         "question_type": 0.95,
         "common_mistake": 0.88,
-        "geometry_model": 0,
+        "geometry_model": 0.0,
         "evidence": {
-          "question_type": ["中线", "角平分线", "重要线段"],
-          "common_mistake": ["中线性质", "角平分线定义", "高线"],
+          "question_type": [
+            "中线",
+            "角平分线",
+            "重要线段"
+          ],
+          "common_mistake": [
+            "中线性质",
+            "角平分线定义",
+            "高线"
+          ],
           "geometry_model": []
         }
       },
@@ -120,10 +121,18 @@
       "confidence": {
         "question_type": 0.97,
         "common_mistake": 0.85,
-        "geometry_model": 0,
+        "geometry_model": 0.0,
         "evidence": {
-          "question_type": ["全等", "≌", "对应边", "对应角"],
-          "common_mistake": ["对应顶点", "对应关系"],
+          "question_type": [
+            "全等",
+            "≌",
+            "对应边",
+            "对应角"
+          ],
+          "common_mistake": [
+            "对应顶点",
+            "对应关系"
+          ],
           "geometry_model": []
         }
       },
@@ -153,10 +162,19 @@
       "confidence": {
         "question_type": 0.96,
         "common_mistake": 0.92,
-        "geometry_model": 0,
+        "geometry_model": 0.0,
         "evidence": {
-          "question_type": ["SAS", "判定", "全等", "求证"],
-          "common_mistake": ["夹角", "SAS", "边角边"],
+          "question_type": [
+            "SAS",
+            "判定",
+            "全等",
+            "求证"
+          ],
+          "common_mistake": [
+            "夹角",
+            "SAS",
+            "边角边"
+          ],
           "geometry_model": []
         }
       },
@@ -185,12 +203,20 @@
       "teacher_note": "课堂重点讲解辅助线作法",
       "confidence": {
         "question_type": 0.94,
-        "common_mistake": 0,
+        "common_mistake": 0.0,
         "geometry_model": 0.97,
         "evidence": {
-          "question_type": ["辅助线", "中线", "倍长"],
+          "question_type": [
+            "辅助线",
+            "中线",
+            "倍长"
+          ],
           "common_mistake": [],
-          "geometry_model": ["倍长中线", "延长AD", "中线"]
+          "geometry_model": [
+            "倍长中线",
+            "延长AD",
+            "中线"
+          ]
         }
       },
       "meta": {
@@ -219,10 +245,18 @@
       "confidence": {
         "question_type": 0.93,
         "common_mistake": 0.79,
-        "geometry_model": 0,
+        "geometry_model": 0.0,
         "evidence": {
-          "question_type": ["折叠", "折纸", "动态", "角度"],
-          "common_mistake": ["分类讨论", "两种情况"],
+          "question_type": [
+            "折叠",
+            "折纸",
+            "动态",
+            "角度"
+          ],
+          "common_mistake": [
+            "分类讨论",
+            "两种情况"
+          ],
           "geometry_model": []
         }
       },
@@ -258,9 +292,20 @@
         "common_mistake": 0.72,
         "geometry_model": 0.96,
         "evidence": {
-          "question_type": ["角平分线", "BP平分", "CP平分"],
-          "common_mistake": ["高线位置", "钝角"],
-          "geometry_model": ["双角平分线", "角平分线夹角", "∠BPC"]
+          "question_type": [
+            "角平分线",
+            "BP平分",
+            "CP平分"
+          ],
+          "common_mistake": [
+            "高线位置",
+            "钝角"
+          ],
+          "geometry_model": [
+            "双角平分线",
+            "角平分线夹角",
+            "∠BPC"
+          ]
         }
       },
       "meta": {
