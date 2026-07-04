@@ -41,30 +41,32 @@ export default function WorkspacePage() {
   const allMistakes = useMemo(() => [...COMMON_MISTAKES, ...customMistakes], [customMistakes]);
   const allModels = useMemo(() => [...GEOMETRY_MODELS, ...customModels], [customModels]);
   const allChapters = useMemo(
-    () => [
-      { id: data.chapter.id, name: data.chapter.name, version: data.chapter.version },
-      ...customChapters,
-    ],
-    [data.chapter, customChapters],
+    () =>
+      data
+        ? [
+            { id: data.chapter.id, name: data.chapter.name, version: data.chapter.version },
+            ...customChapters,
+          ]
+        : customChapters,
+    [data, customChapters],
   );
 
   const filteredQuestions = useMemo(() => {
+    if (!data) return [];
     let list = data.questions;
     if (activeFilter) {
       list = list.filter((q) => q.question_type.id === activeFilter);
     }
     return list.sort((a, b) => a.order - b.order);
-  }, [data.questions, activeFilter]);
+  }, [data, activeFilter]);
 
   const selectedQuestion = useMemo(
-    () => data.questions.find((q) => q.question_id === selectedId) ?? null,
-    [data.questions, selectedId],
+    () => data?.questions.find((q) => q.question_id === selectedId) ?? null,
+    [data, selectedId],
   );
 
-  const typeIds = new Set(data.questions.map((q) => q.question_type.id));
-  const avgAccuracy =
-    data.questions.reduce((sum, q) => sum + q.confidence.question_type, 0) /
-    Math.max(data.questions.length, 1);
+  const questions = data?.questions ?? [];
+  const typeIds = new Set(questions.map((q) => q.question_type.id));
 
   // ── Loading / Error 状态 ──
   if (loading) {
