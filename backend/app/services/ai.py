@@ -1,8 +1,8 @@
 """
-AI 服务 — 调用 OpenAI 进行题目分类
+AI 服务 — 调用智谱 / DeepSeek 进行题目分类
 
 流程：
-  OCR 文本 → GPT-4o + classify_prompt → 结构化分类结果
+  OCR 文本 → DeepSeek + classify_prompt → 结构化分类结果
 
 使用方式：
   from app.services.ai import classify_questions

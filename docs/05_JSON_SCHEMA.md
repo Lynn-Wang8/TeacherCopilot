@@ -12,7 +12,7 @@
 
 | 消费者 | 用途 |
 | --- | --- |
-| AI（OpenAI Structured Output） | 按 Schema 输出 JSON，不得输出额外字段 |
+| AI（智谱 / DeepSeek / 兼容 OpenAI 格式） | 按 Schema 输出 JSON，不得输出额外字段 |
 | 前端（React / Next.js） | 渲染 Workspace，驱动所有页面状态 |
 | 后端（FastAPI） | 接收 AI 输出、持久化、传给 DOCX 生成器 |
 | DOCX Generator | 读取最终 JSON，按题型生成 Word 讲义 |

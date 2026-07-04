@@ -85,7 +85,7 @@ AI负责：
 
 ## AI
 
-* OpenAI API（Vision + Structured Output）
+* 智谱 GLM-4V（识图 OCR）+ DeepSeek（题目分类）
 
 ## Export
 

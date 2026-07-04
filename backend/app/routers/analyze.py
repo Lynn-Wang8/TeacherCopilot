@@ -39,7 +39,7 @@ async def analyze_questions(request: AnalyzeRequest):
     """
     对上传的题目进行 AI 分类
 
-    如果有 OPENAI_API_KEY 环境变量 → 调用 GPT-4o
+    如果配置了 AI_API_KEY 环境变量 → 调用 DeepSeek / 智谱 分类
     否则 → 使用关键词 Mock 分类
 
     示例请求体：
