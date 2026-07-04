@@ -261,9 +261,9 @@ def _parse_response(content: str, ocr_texts: list[dict]) -> list[Question]:
 
     questions = []
     for i, raw in enumerate(raw_list):
-        # 补充缺失的字段
-        raw.setdefault("question_id", ocr_texts[i]["question_id"] if i < len(ocr_texts) else f"Q{i+1:03d}")
-        raw.setdefault("order", ocr_texts[i]["order"] if i < len(ocr_texts) else i + 1)
+        # 强制使用输入中的 question_id 和 order（AI 不可信）
+        raw["question_id"] = ocr_texts[i]["question_id"] if i < len(ocr_texts) else f"Q{i+1:03d}"
+        raw["order"] = ocr_texts[i]["order"] if i < len(ocr_texts) else i + 1
         raw.setdefault("image", "")
         raw.setdefault("teacher_note", "")
         raw.setdefault("meta", {"editable_by": {"teacher_note": "teacher"}})
