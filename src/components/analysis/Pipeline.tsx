@@ -14,9 +14,10 @@ const PIPELINE_STEPS: { key: AnalysisStep; num: number; label: string }[] = [
 interface PipelineProps {
   currentStep: AnalysisStep | null;
   failedStep?: AnalysisStep | null;
+  isComplete?: boolean;
 }
 
-export default function Pipeline({ currentStep, failedStep }: PipelineProps) {
+export default function Pipeline({ currentStep, failedStep, isComplete }: PipelineProps) {
   const currentIndex = currentStep
     ? PIPELINE_STEPS.findIndex((s) => s.key === currentStep)
     : -1;
@@ -24,17 +25,26 @@ export default function Pipeline({ currentStep, failedStep }: PipelineProps) {
   return (
     <div className="text-left">
       {PIPELINE_STEPS.map((step, i) => {
-        const isDone = i < currentIndex;
-        const isActive = i === currentIndex;
         const isFailed = failedStep === step.key;
+        const hasFailed = failedStep !== null && failedStep !== undefined;
+        const isDone = isComplete || i < currentIndex;
+        const isActive = !hasFailed && i === currentIndex;
 
         let dotClass = "bg-slate-100 text-text-muted";
-        if (isFailed) dotClass = "bg-danger/10 text-danger";
-        else if (isDone) dotClass = "bg-[#DCFCE7] text-[#16A34A]";
-        else if (isActive) dotClass = "bg-primary text-white animate-pulse";
+        if (isFailed) {
+          dotClass = "bg-danger/10 text-danger";
+        } else if (hasFailed && !isFailed) {
+          // 某步失败后，其余步骤变灰
+          dotClass = "bg-slate-100 text-text-muted";
+        } else if (isDone) {
+          dotClass = "bg-[#DCFCE7] text-[#16A34A]";
+        } else if (isActive) {
+          dotClass = "bg-primary text-white animate-pulse";
+        }
 
         let textClass = "text-text-muted";
         if (isFailed) textClass = "text-danger";
+        else if (isDone) textClass = "text-text-primary";
         else if (isActive) textClass = "font-semibold text-primary";
 
         return (

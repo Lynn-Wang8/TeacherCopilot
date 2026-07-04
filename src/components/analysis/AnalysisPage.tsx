@@ -104,7 +104,7 @@ export default function AnalysisPage({
             <strong className="text-text-primary">{questionCount}</strong>{" "}
             道题目，覆盖 <strong className="text-text-primary">6</strong> 个题型
           </p>
-          <Pipeline currentStep={null} />
+          <Pipeline currentStep={null} isComplete />
           <button
             onClick={onComplete}
             className="mt-6 rounded-btn bg-primary px-8 py-3 text-sm font-semibold text-white hover:bg-primary-hover"

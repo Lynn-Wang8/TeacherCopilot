@@ -62,6 +62,42 @@ export default function WorkspacePage({ onExport }: WorkspacePageProps) {
     }));
   }
 
+  function handleAddManualQuestion(ocrText: string, typeId: string) {
+    const type = allTypes.find((t) => t.id === typeId);
+    if (!type) return;
+    const maxOrder = data.questions.reduce((m, q) => Math.max(m, q.order), 0);
+    const nextId = `Q${String(data.questions.length + 1).padStart(3, "0")}`;
+    const newQ: Question = {
+      question_id: nextId,
+      order: maxOrder + 1,
+      image: "",
+      ocr_text: ocrText,
+      question_type: { id: type.id, name: type.name, version: type.version },
+      common_mistake: null,
+      geometry_model: null,
+      teacher_note: "",
+      confidence: { question_type: 0, common_mistake: 0, geometry_model: 0 },
+      meta: { editable_by: { teacher_note: "teacher" } },
+    };
+    setData((prev) => ({ ...prev, questions: [...prev.questions, newQ] }));
+    setSelectedId(nextId); // 自动选中新题目
+  }
+
+  function handleDeleteType(id: string) {
+    // 移除自定义题型（Skill Library 题型也会被"隐藏"）
+    setCustomTypes((prev) => prev.filter((t) => t.id !== id));
+    // 将该题型下的题目归入 unknown
+    setData((prev) => ({
+      ...prev,
+      questions: prev.questions.map((q) =>
+        q.question_type.id === id
+          ? { ...q, question_type: { id: "unknown", name: "待教师确认", version: "v1" } }
+          : q,
+      ),
+    }));
+    if (activeFilter === id) setActiveFilter(null);
+  }
+
   function makeCreateHandler(
     list: Reference[],
     setter: (fn: (prev: Reference[]) => Reference[]) => void,
@@ -161,7 +197,8 @@ export default function WorkspacePage({ onExport }: WorkspacePageProps) {
             setActiveFilter(typeId);
             setSelectedId(null);
           }}
-          onCreateCustomType={makeCreateHandler(customTypes, setCustomTypes, "custom_type")}
+          onDeleteCustomType={handleDeleteType}
+          onAddManualQuestion={handleAddManualQuestion}
         />
 
         <QuestionList
